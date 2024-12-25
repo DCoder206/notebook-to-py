@@ -23,9 +23,6 @@ jobs:
       - name: Build binary
         run: |
           go build -o ipyconverter.exe ./src/converter.go
-      - name: Get current tag 
-        id: get_tag 
-        run: echo "::set-output name=tag::$(git describe --tags --abbrev=0)"
 
       - name: Create Release
         id: create_release
