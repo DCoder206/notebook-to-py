@@ -2,8 +2,11 @@ name: Release Binary
 
 on:
   push:
+    paths:
+        - 'src/converter.go'
     tags:
       - 'v*.*.*'
+  workflow_dispatch:
 
 jobs:
   build:
