@@ -3,7 +3,7 @@ name: Release Binary
 on:
   push:
     paths:
-        - 'src/converter.go'
+      - 'src/converter.go'
     tags:
       - 'v*.*.*'
   workflow_dispatch:
@@ -24,14 +24,35 @@ jobs:
         run: |
           go build -o ipyconverter.exe ./src/converter.go
 
+      - name: Get latest tag
+        id: get_latest_tag
+        run: |
+          # Get the latest tag in the repository
+          latest_tag=$(git describe --tags --abbrev=0)
+          echo "Latest tag: $latest_tag"
+          echo "latest_tag=$latest_tag" >> $GITHUB_ENV
+
+      - name: Increment version tag
+        id: increment_tag
+        run: |
+          latest_tag="${{ env.latest_tag }}"
+          major=$(echo $latest_tag | cut -d '.' -f1 | tr -d 'v')
+          minor=$(echo $latest_tag | cut -d '.' -f2)
+          patch=$(echo $latest_tag | cut -d '.' -f3)
+          new_minor=$((minor + 1))
+          new_tag="v${major}.${new_minor}.0"
+          
+          echo "New tag: $new_tag"
+          echo "new_tag=$new_tag" >> $GITHUB_ENV
+
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
+          tag_name: ${{ env.new_tag }}
+          release_name: Release ${{ env.new_tag }}
           draft: false
           prerelease: false
 
