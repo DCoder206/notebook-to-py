@@ -33,12 +33,6 @@ func convert(filepath string, contarr *[]string) {
 		fmt.Println("Error getting file content:\n", err)
 		return
 	}
-	var fdata interface{}
-	err = json.Unmarshal(out.Bytes(), &fdata)
-	if err != nil {
-		fmt.Println("Error parsing file content:\n", err)
-		return
-	}
 	var nb Notebook
 	err = json.Unmarshal(out.Bytes(), &nb)
 	if err != nil {
