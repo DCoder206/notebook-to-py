@@ -1,4 +1,4 @@
-# Python Notebook to script Converter
+# Python Notebook to script converter
 A tool to export Jupyter notebooks as Python files
 
 ## Description
