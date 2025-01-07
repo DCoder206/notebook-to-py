@@ -3,7 +3,7 @@ A tool to export Jupyter notebooks as Python files
 
 ## Description
 
-This Go-based tool converts Jupyter Notebook files (`.ipynb`) into Python script files (`.py`). The script reads a `.ipynb` notebook file, extracts the code and markdown cells, and outputs the code in a `.py` file format. Markdown cells are converted into Python comments, making it easy to preserve documentation alongside the code.
+This tool converts Jupyter Notebook files (`.ipynb`) into Python script files (`.py`). The script reads a `.ipynb` notebook file, extracts the code and markdown cells, and outputs the code in a `.py` file format. Markdown cells are converted into Python comments, making it easy to preserve documentation alongside the code.
 
 ### Features:
 - Converts Jupyter notebook code cells into executable Python code.
