@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"os"
 	"os/exec"
@@ -58,31 +59,41 @@ func convert(filepath string, contarr *[]string) {
 	}
 }
 func main() {
-	var fpath string
-	fmt.Print("Enter file path >>> ")
-	fmt.Scanln(&fpath)
-	extmtch, err := regexp.MatchString(`\.ipynb$`, fpath)
-	if err != nil {
-		fmt.Println("Error checking file:\n", err)
+	fileFlag := flag.String("file", "", "path to the .ipynb file")
+	flag.Parse()
+	var files []string
+	if *fileFlag != "" {
+		files = append(files, *fileFlag)
+	}
+	files = append(files, flag.Args()...)
+	if len(files) == 0 {
+		fmt.Println("Usage: <script-name> [-file <file-path> / <file-path>]")
 		return
 	}
-	if !extmtch {
-		fmt.Println("Error: The file must have a .ipynb extension.")
-		return
+	for _, fpath := range files {
+		extmtch, err := regexp.MatchString(`\.ipynb$`, fpath)
+		if err != nil {
+			fmt.Println("Error checking file:\n", err)
+			return
+		}
+		if !extmtch {
+			fmt.Println("Error: The file must have a .ipynb extension.")
+			return
+		}
+		if _, err := os.Stat(fpath); os.IsNotExist(err) {
+			fmt.Println("Error: No such file found")
+			return
+		}
+		fname := regexp.MustCompile(`([^\\\/]+)\.[^\\\/]+$`).FindStringSubmatch(fpath)[1]
+		var data []string
+		convert(fpath, &data)
+		pyfile, err := os.Create(fname + ".py")
+		if err != nil {
+			fmt.Println("Error creating file:\n", err)
+			return
+		}
+		defer pyfile.Close()
+		_, err = pyfile.WriteString(strings.Join(data, ""))
+		fmt.Printf("Python file '%s.py' created\n", fname)
 	}
-	if _, err := os.Stat(fpath); os.IsNotExist(err) {
-		fmt.Println("Error: No such file found")
-		return
-	}
-	fname := regexp.MustCompile(`([^\\\/]+)\.[^\\\/]+$`).FindStringSubmatch(fpath)[1]
-	var data []string
-	convert(fpath, &data)
-	pyfile, err := os.Create(fname + ".py")
-	if err != nil {
-		fmt.Println("Error creating file:\n", err)
-		return
-	}
-	defer pyfile.Close()
-	_, err = pyfile.WriteString(strings.Join(data, ""))
-	fmt.Println("Python file created successfully")
 }
