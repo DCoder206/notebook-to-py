@@ -59,7 +59,7 @@ func convert(filepath string, contarr *[]string) {
 	}
 }
 func main() {
-	fileFlag := flag.String("file", "", "path to the .ipynb file")
+	fileFlag := flag.String("file", "", "path to .ipynb file")
 	flag.Parse()
 	var files []string
 	if *fileFlag != "" {
@@ -67,7 +67,7 @@ func main() {
 	}
 	files = append(files, flag.Args()...)
 	if len(files) == 0 {
-		fmt.Println("Usage: <script-name> [-file <file-path> / <file-path>]")
+		fmt.Println("Error: No filepath found\nUsage: <script-name> [-file <file-path> / <file-path>]")
 		return
 	}
 	for _, fpath := range files {
