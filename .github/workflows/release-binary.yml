@@ -3,7 +3,7 @@ name: Release Binary
 on:
   push:
     paths:
-      - 'src/converter.go'
+      - './src/converter.go'
     tags:
       - 'v*.*.*'
   workflow_dispatch:
