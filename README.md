@@ -18,8 +18,8 @@ You have two options to get the tool: either by downloading the precompiled `.ex
 
 #### Option 1: Download Precompiled Executable
 
-1. Navigate to the [releases page](https://github.com/DCoder206/notebook-to-py/releases/tag/v1.0.0).
-2. Download the appropriate file for your operating system:
+1. Navigate to the [releases page](https://github.com/DCoder206/notebook-to-py/releases/).
+2. Download the appropriate file for your operating system from the latest release:
    - For **Windows**: Download the `.exe` file.
    - For **macOS/Linux**: Download the `.tar.gz` or `.zip` file.
    
