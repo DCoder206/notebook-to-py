@@ -20,7 +20,7 @@ type Notebook struct {
 	Cells []Cell `json:"cells"`
 }
 
-func convert(filepath string, contarr *[]string) {
+func convert(filepath string) ([]string, error) {
 	var out bytes.Buffer
 	var catcmd *exec.Cmd
 	if runtime.GOOS == "windows" {
@@ -31,16 +31,15 @@ func convert(filepath string, contarr *[]string) {
 	catcmd.Stdout = &out
 	err := catcmd.Run()
 	if err != nil {
-		fmt.Println("Error getting file content:\n", err)
-		return
+		return nil, fmt.Errorf("Error getting file content: %v", err)
 	}
 	var nb Notebook
 	err = json.Unmarshal(out.Bytes(), &nb)
 	if err != nil {
-		fmt.Println("Error parsing file content:\n", err)
-		return
+		return nil, fmt.Errorf("Error parsing file content: %v", err)
 	}
 	re := regexp.MustCompile(`(?m)^[#*_]+\s*(.*?)\s*[_*]*$`)
+	var contarr []string
 	for _, cell := range nb.Cells {
 		sourceContent := ""
 		cell.CellType = strings.ToLower(cell.CellType)
@@ -55,9 +54,11 @@ func convert(filepath string, contarr *[]string) {
 				sourceContent += "# " + line + "\n"
 			}
 		}
-		*contarr = append(*contarr, sourceContent)
+		contarr = append(contarr, sourceContent)
 	}
+	return contarr, nil
 }
+
 func main() {
 	fileFlag := flag.String("file", "", "path to .ipynb file")
 	flag.Parse()
@@ -85,8 +86,11 @@ func main() {
 			return
 		}
 		fname := regexp.MustCompile(`([^\\\/]+)\.[^\\\/]+$`).FindStringSubmatch(fpath)[1]
-		var data []string
-		convert(fpath, &data)
+		data, err := convert(fpath)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
 		pyfile, err := os.Create(fname + ".py")
 		if err != nil {
 			fmt.Println("Error creating file:\n", err)
@@ -94,6 +98,10 @@ func main() {
 		}
 		defer pyfile.Close()
 		_, err = pyfile.WriteString(strings.Join(data, ""))
+		if err != nil {
+			fmt.Println("Error writing to file:\n", err)
+			return
+		}
 		fmt.Printf("Python file '%s.py' created\n", fname)
 	}
 }
