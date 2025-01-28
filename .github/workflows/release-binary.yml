@@ -2,8 +2,6 @@ name: Release Binary
 
 on:
   push:
-    paths:
-      - './src/converter.go'
     tags:
       - 'v*.*.*'
   workflow_dispatch:
@@ -13,37 +11,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       - name: Set up Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v4
         with:
-          go-version: 1.23
+          go-version: '^1.20'
 
       - name: Build binary
-        run: |
-          go build -o ipyconverter.exe ./src/converter.go
+        run: go build -o ipyconverter ./src/converter.go
 
-      - name: Get latest tag
-        id: get_latest_tag
+      - name: Get latest commit message for converter.go
+        id: latest_commit_message
         run: |
-          # Get the latest tag in the repository
-          latest_tag=$(git describe --tags --abbrev=0)
-          echo "Latest tag: $latest_tag"
-          echo "latest_tag=$latest_tag" >> $GITHUB_ENV
-
-      - name: Increment version tag
-        id: increment_tag
-        run: |
-          latest_tag="${{ env.latest_tag }}"
-          major=$(echo $latest_tag | cut -d '.' -f1 | tr -d 'v')
-          minor=$(echo $latest_tag | cut -d '.' -f2)
-          patch=$(echo $latest_tag | cut -d '.' -f3)
-          new_minor=$((minor + 1))
-          new_tag="v${major}.${new_minor}.0"
-          
-          echo "New tag: $new_tag"
-          echo "new_tag=$new_tag" >> $GITHUB_ENV
+          message=$(git log -1 --pretty=format:"%s" ./src/converter.go) # Get subject line
+          echo "::set-output name=message::$message"
 
       - name: Create Release
         id: create_release
@@ -51,8 +35,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ env.new_tag }}
-          release_name: Release ${{ env.new_tag }}
+          tag_name: ${{ github.ref }}
+          release_name: ${{ github.ref }}
+          body: ${{ steps.latest_commit_message.outputs.message }}
           draft: false
           prerelease: false
 
@@ -62,6 +47,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./ipyconverter.exe
-          asset_name: ipyconverter.exe
+          asset_path: ./ipyconverter
+          asset_name: ipyconverter
           asset_content_type: application/octet-stream
